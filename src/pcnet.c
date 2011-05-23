@@ -182,6 +182,13 @@ static unsigned long pcnet_dummy_bcr_read32(void __iomem *ioaddr,
 	return ioread32(ioaddr + PCNET_IO32_BDP) & 0xffff;
 }
 
+static void pcnet_dummy_reset(void __iomem *ioaddr)
+{
+	ioread16(ioaddr + PCNET_IO_RESET);
+	if (pcnet_dummy_csr_read16(ioaddr, CSR0) != CSR0_STOP)
+		ioread32(ioaddr + PCNET_IO32_RESET);
+}
+
 static int pcnet_dummy_open(struct net_device *ndev)
 {
 	return 0;
