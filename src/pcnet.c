@@ -33,6 +33,64 @@ enum {
 	PCNET_IOSIZE_LEN = 0x20,
 };
 
+enum {
+	PCNET_IO_PROM = 0x0,
+	PCNET_IO_RDP = 0x10,
+	PCNET_IO_RAP = 0x12,
+	PCNET_IO_RESET = 0x14,
+	PCNET_IO_BDP = 0x16,
+};
+
+enum {
+	PCNET_IO32_PROM = 0x0,
+	PCNET_IO32_RDP = 0x10,
+	PCNET_IO32_RAP = 0x14,
+	PCNET_IO32_RESET = 0x18,
+	PCNET_IO32_BDP = 0x1c,
+};
+
+enum {
+	CSR0 = 0,
+	CSR1 = 1,
+	CSR2 = 2,
+	CSR4 = 4,
+	CSR15 = 15,
+	/* missed frame count */
+	CSR112 = 112,
+};
+
+enum {
+	BCR18 = 18,
+};
+
+enum {
+	CSR0_INIT = 0x0001,
+	CSR0_START= 0x0002,
+	CSR0_STOP = 0x0004,
+	/* transmit demand */
+	CSR0_TDMD = 0x0008,
+	/* transmitter on */
+	CSR0_TXON = 0x0010,
+	/* receiver on */
+	CSR0_RXON = 0x0020,
+	/* interrupt enable */
+	CSR0_IENA = 0x0040,
+	CSR0_INTR = 0x0080,
+	/* initialisation done */
+	CSR0_IDON = 0x0100,
+	CSR0_TINT = 0x0200,
+	CSR0_RINT = 0x0400,
+	CSR0_MERR = 0x0800,
+	CSR0_MISS = 0x1000,
+	CSR0_CERR = 0x2000,
+	CSR0_BABL = 0x4000,
+	CSR0_ERR  = 0x8000,
+};
+
+enum {
+	BCR18_DWIO = 0x0080,
+};
+
 /* PCnet-PCI II controller initialization includes the reading
  * of the initialization block in memory to obtain the operat-
  * ing parameters. 
@@ -93,6 +151,36 @@ struct pcnet_dummy_private {
 	struct pci_dev *pci_dev;
 	void __iomem *base;
 };
+
+static unsigned short pcnet_dummy_csr_read16(void __iomem *ioaddr,
+		unsigned short csr)
+{
+	iowrite16(csr, ioaddr + PCNET_IO_RAP);
+	return ioread16(ioaddr + PCNET_IO_RDP);
+}
+
+static unsigned long pcnet_dummy_csr_read32(void __iomem *ioaddr,
+		unsigned long csr)
+{
+	iowrite32(csr, ioaddr + PCNET_IO32_RAP);
+	/* 16 most significant bits are undefined */
+	return ioread32(ioaddr + PCNET_IO32_RDP) & 0xffff;
+}
+
+static void pcnet_dummy_csr_write32(void __iomem *ioaddr,
+		unsigned long data, unsigned long csr)
+{
+	iowrite32(csr, ioaddr + PCNET_IO32_RAP);
+	iowrite32(data, ioaddr + PCNET_IO32_RDP);
+}
+
+static unsigned long pcnet_dummy_bcr_read32(void __iomem *ioaddr,
+		unsigned long bcr)
+{
+	iowrite32(bcr, ioaddr + PCNET_IO32_RAP);
+	/* 16 most significant bits are undefined */
+	return ioread32(ioaddr + PCNET_IO32_BDP) & 0xffff;
+}
 
 static int pcnet_dummy_open(struct net_device *ndev)
 {
