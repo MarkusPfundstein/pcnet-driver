@@ -189,6 +189,19 @@ static void pcnet_dummy_reset(void __iomem *ioaddr)
 		ioread32(ioaddr + PCNET_IO32_RESET);
 }
 
+static int pcnet_dummy_switch_dword_mode(void __iomem *ioaddr)
+{
+	int err = 0;
+
+	pcnet_dummy_reset(ioaddr);
+	iowrite32(0, ioaddr + PCNET_IO_RDP);
+	if (!(pcnet_dummy_bcr_read32(ioaddr, BCR18) & BCR18_DWIO)) {
+		printk(KERN_ERR DRV_NAME ": cannot switch controller to 32bit mode\n");
+		err = -ENODEV;
+	}
+	return err;
+}
+
 static int pcnet_dummy_open(struct net_device *ndev)
 {
 	return 0;
@@ -278,6 +291,9 @@ static int __devinit pcnet_dummy_init_one(struct pci_dev *pdev,
 	if (!ioaddr)
 		goto out_res;
 	pci_set_drvdata(pdev, ndev);
+
+	if (pcnet_dummy_switch_dword_mode(ioaddr))
+		goto out_res_unmap;
 
 	if (pcnet_dummy_init_netdev(pdev, (unsigned long)ioaddr))
 		goto out_res_unmap;
