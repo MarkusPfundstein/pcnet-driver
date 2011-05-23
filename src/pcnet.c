@@ -73,7 +73,7 @@ struct pcnet_dummy_init_block {
 
 /* 32bit TX/RX descriptors */
 /* PCnet Software Design Considerations, p.5 */
-struct xmit_descr {
+struct pcnet_dummy_xmit_descr {
 	__le32 addr;
 	/* The BCNT fields of the transmit and receive descriptors
 	 * are 12-bit negative numbers representing the twos com-
@@ -85,7 +85,7 @@ struct xmit_descr {
 	__le32 reserved;
 };
 
-struct pcnet_private {
+struct pcnet_dummy_private {
 	/* TODO:
 	 * DMA buffer management operations
 	 */
@@ -111,7 +111,7 @@ static int pcnet_dummy_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 
 #ifdef HAVE_NET_DEVICE_OPS
 /* net_device_ops structure is new for 2.6.31 */
-static const struct net_device_ops pcnet_net_device_ops = {
+static const struct net_device_ops pcnet_dummy_net_device_ops = {
 	.ndo_open = pcnet_dummy_open,
 	.ndo_stop = pcnet_dummy_stop,
 	.ndo_start_xmit = pcnet_dummy_start_xmit
@@ -122,7 +122,7 @@ static int __devinit pcnet_dummy_init_netdev(struct pci_dev *pdev,
 		unsigned long ioaddr)
 {
 	struct net_device *ndev = pci_get_drvdata(pdev);
-	struct pcnet_private *pp;
+	struct pcnet_dummy_private *pp;
 	int irq;
 
 	irq = pdev->irq;
@@ -140,7 +140,7 @@ static int __devinit pcnet_dummy_init_netdev(struct pci_dev *pdev,
 	 * with a macro
 	 */
 #ifdef HAVE_NET_DEVICE_OPS
-	ndev->netdev_ops = &pcnet_net_device_ops;
+	ndev->netdev_ops = &pcnet_dummy_net_device_ops;
 #else
 	ndev->open = pcnet_dummy_open;
 	ndev->stop = pcnet_dummy_stop;
@@ -156,7 +156,7 @@ static int __devinit pcnet_dummy_init_netdev(struct pci_dev *pdev,
 static int __devinit pcnet_dummy_init_one(struct pci_dev *pdev,
 		const struct pci_device_id *ent)
 {
-	struct pcnet_private *pp;
+	struct pcnet_dummy_private *pp;
 	struct net_device *ndev;
 	void __iomem *ioaddr;
 #ifdef USE_IO_OPS
@@ -203,7 +203,7 @@ out:
 static void __devexit pcnet_dummy_remove_one(struct pci_dev *pdev)
 {
 	struct net_device *ndev = pci_get_drvdata(pdev);
-	struct pcnet_private *pp;
+	struct pcnet_dummy_private *pp;
 
 	pp = netdev_priv(ndev);
 	pci_iounmap(pdev, pp->base);
