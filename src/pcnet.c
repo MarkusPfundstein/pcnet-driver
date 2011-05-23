@@ -225,14 +225,13 @@ static struct pci_driver pcnet_dummy_driver = {
 
 static int __init pcnet_init(void)
 {
-	printk(KERN_INFO DRV_NAME ": " DRV_DESCRIPTION);
+	printk(KERN_INFO DRV_NAME ": " DRV_DESCRIPTION "\n");
 
 	return pci_register_driver(&pcnet_dummy_driver);
 }
 
 static void __exit pcnet_exit(void)
 {
-	printk(KERN_INFO DRV_NAME ": unloading...");
 	pci_unregister_driver(&pcnet_dummy_driver);
 }
 
