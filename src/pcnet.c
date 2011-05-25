@@ -265,10 +265,7 @@ static int __devinit pcnet_dummy_init_netdev(struct pci_dev *pdev,
 	ndev->hard_start_xmit = pcnet_dummy_start_xmit;
 #endif /* HAVE_NET_DEVICE_OPS */
 
-	/* registers net_device and returns err */
-	/* TODO: reset the chip at the end */
-
-	return 0;
+	return register_netdev(ndev);
 }
 
 static int __devinit pcnet_dummy_init_one(struct pci_dev *pdev,
@@ -327,6 +324,7 @@ static void __devexit pcnet_dummy_remove_one(struct pci_dev *pdev)
 	struct pcnet_dummy_private *pp;
 
 	pp = netdev_priv(ndev);
+	unregister_netdev(ndev);
 	pcnet_dummy_reset(pp->base);
 	pci_iounmap(pdev, pp->base);
 	free_netdev(ndev);
