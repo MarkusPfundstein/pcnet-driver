@@ -232,6 +232,7 @@ static int __devinit pcnet_dummy_init_netdev(struct pci_dev *pdev,
 	struct net_device *ndev = pci_get_drvdata(pdev);
 	struct pcnet_dummy_private *pp;
 	int irq;
+	unsigned long hwaddr;
 
 	irq = pdev->irq;
 	pp = netdev_priv(ndev);
@@ -240,6 +241,15 @@ static int __devinit pcnet_dummy_init_netdev(struct pci_dev *pdev,
 	pp->pci_dev = pdev;
 	pp->base = (void *)ioaddr;
 	spin_lock_init(&pp->lock);
+
+	hwaddr = ioread32((void *)ioaddr);
+	ndev->dev_addr[0] = hwaddr & 0xff;
+	ndev->dev_addr[1] = hwaddr >> 8 & 0xff;
+	ndev->dev_addr[2] = hwaddr >> 16 & 0xff;
+	ndev->dev_addr[3] = hwaddr >> 24;
+	hwaddr = ioread32((void *)(ioaddr + 4)) & 0xffff;
+	ndev->dev_addr[4] = hwaddr & 0xff;
+	ndev->dev_addr[5] = hwaddr >> 8;
 
 	/* init DMA rings */
 	/* init net_dev_ops */
